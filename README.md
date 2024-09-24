@@ -17,3 +17,5 @@ The frontend consists of simple HTML pages rendered through the Flask framework.
 
 ### Template Used:
 The project adapts the **[SB Admin 2](https://startbootstrap.com/theme/sb-admin-2)** node.js template, offering a responsive and clean design for the user interface.
+
+[SB Admin 2 - GitHub](https://github.com/startbootstrap/startbootstrap-sb-admin-2)
