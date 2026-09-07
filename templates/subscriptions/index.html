@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+
+{% block title %}Subscription Management | {{ app_name }}{% endblock %}
+
+{% block styles %}
+<link href="{{ url_for('static', filename='css/subscriptions.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div id="page-top">
+    <div id="wrapper">
+        {% include 'partials/_sidebar.html' %}
+
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content">
+                {% include 'partials/_topbar.html' %}
+
+                <main class="container-fluid subscriptions-page" id="subscriptionApp"
+                    aria-labelledby="subscriptionPageTitle">
+                    <header class="subscriptions-heading">
+                        <div>
+                            <p class="subscriptions-eyebrow mb-1">Database example</p>
+                            <h1 class="h3 mb-1 text-gray-800" id="subscriptionPageTitle">
+                                Subscription Management
+                            </h1>
+                            <p class="mb-0 text-gray-500">
+                                Track recurring services and understand their normalized cost.
+                            </p>
+                        </div>
+                        <span class="subscriptions-badge">
+                            <i class="fas fa-database mr-2" aria-hidden="true"></i>
+                            SQLite-backed
+                        </span>
+                    </header>
+
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                        <div class="subscriptions-alerts" aria-live="polite">
+                            {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="status">
+                                <i class="fas fa-check-circle mr-2" aria-hidden="true"></i>
+                                {{ message }}
+                                <button class="close" type="button" data-dismiss="alert"
+                                    aria-label="Dismiss notification">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    {% endwith %}
+
+                    <section class="subscriptions-summary" aria-label="Subscription summary">
+                        <article class="subscription-summary-card subscription-summary-card--primary">
+                            <span class="subscription-summary-icon" aria-hidden="true">
+                                <i class="fas fa-layer-group"></i>
+                            </span>
+                            <div>
+                                <p>Active subscriptions</p>
+                                <strong id="subscriptionCount">{{ summary.count }}</strong>
+                                <small>Recurring services tracked</small>
+                            </div>
+                        </article>
+
+                        <article class="subscription-summary-card subscription-summary-card--success">
+                            <span class="subscription-summary-icon" aria-hidden="true">
+                                <i class="fas fa-calendar-alt"></i>
+                            </span>
+                            <div>
+                                <p>Monthly equivalent</p>
+                                <strong id="monthlyEquivalent">
+                                    ${{ '{:,.2f}'.format(summary.monthly_total) }}
+                                </strong>
+                                <small>All billing cycles normalized</small>
+                            </div>
+                        </article>
+
+                        <article class="subscription-summary-card subscription-summary-card--info">
+                            <span class="subscription-summary-icon" aria-hidden="true">
+                                <i class="fas fa-chart-line"></i>
+                            </span>
+                            <div>
+                                <p>Annual projection</p>
+                                <strong id="annualProjection">
+                                    ${{ '{:,.2f}'.format(summary.annual_total) }}
+                                </strong>
+                                <small>Estimated recurring spend per year</small>
+                            </div>
+                        </article>
+                    </section>
+
+                    <div class="subscriptions-billing-mix" aria-label="Billing cycle distribution">
+                        <span class="subscriptions-billing-label">Billing mix</span>
+                        {% for item in summary.recurrence_counts %}
+                        <span class="subscriptions-cycle-chip">
+                            {{ item.label }}
+                            <strong>{{ item.count }}</strong>
+                        </span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="subscriptions-layout">
+                        <section class="subscriptions-panel subscriptions-form-panel"
+                            aria-labelledby="addSubscriptionTitle">
+                            <div class="subscriptions-panel-heading">
+                                <span class="subscriptions-panel-icon" aria-hidden="true">
+                                    <i class="fas fa-plus"></i>
+                                </span>
+                                <div>
+                                    <h2 id="addSubscriptionTitle">Add subscription</h2>
+                                    <p>Enter the service and its billing schedule.</p>
+                                </div>
+                            </div>
+
+                            {% if errors %}
+                            <div class="alert alert-danger subscriptions-form-alert" role="alert">
+                                Check the highlighted fields and try again.
+                            </div>
+                            {% endif %}
+
+                            <form method="post" action="{{ url_for('subscriptions.index') }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                                <div class="form-group">
+                                    <label for="subscriptionName">Name</label>
+                                    <input class="form-control{% if errors.name %} is-invalid{% endif %}"
+                                        id="subscriptionName" name="name" type="text"
+                                        value="{{ form_values.name }}" maxlength="100"
+                                        placeholder="Example: Design Suite" autocomplete="organization"
+                                        {% if errors.name %}aria-describedby="subscriptionNameError"
+                                        aria-invalid="true"{% endif %} required>
+                                    {% if errors.name %}
+                                    <div class="invalid-feedback" id="subscriptionNameError">
+                                        {{ errors.name }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="subscriptionValue">Value (USD)</label>
+                                    <div class="subscriptions-value-field">
+                                        <span aria-hidden="true">$</span>
+                                        <input class="form-control{% if errors.value %} is-invalid{% endif %}"
+                                            id="subscriptionValue" name="value" type="number"
+                                            value="{{ form_values.value }}" min="0.01"
+                                            max="9999999999.99" step="0.01" inputmode="decimal"
+                                            placeholder="19.90"
+                                            {% if errors.value %}aria-describedby="subscriptionValueError"
+                                            aria-invalid="true"{% endif %} required>
+                                    </div>
+                                    {% if errors.value %}
+                                    <div class="invalid-feedback d-block" id="subscriptionValueError">
+                                        {{ errors.value }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="subscriptionRecurrence">Recurrence</label>
+                                    <select class="form-control{% if errors.recurrence %} is-invalid{% endif %}"
+                                        id="subscriptionRecurrence" name="recurrence"
+                                        {% if errors.recurrence %}aria-describedby="subscriptionRecurrenceError"
+                                        aria-invalid="true"{% endif %} required>
+                                        {% for option in recurrence_options %}
+                                        <option value="{{ option.value }}"
+                                            {% if form_values.recurrence == option.value %}selected{% endif %}>
+                                            {{ option.label }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    {% if errors.recurrence %}
+                                    <div class="invalid-feedback" id="subscriptionRecurrenceError">
+                                        {{ errors.recurrence }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <button class="btn btn-primary btn-block subscriptions-submit" type="submit">
+                                    <i class="fas fa-plus mr-2" aria-hidden="true"></i>
+                                    Add subscription
+                                </button>
+                            </form>
+
+                            <div class="subscriptions-storage-note">
+                                <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                                <p>
+                                    Entries are validated on the server and persisted in the configured database.
+                                </p>
+                            </div>
+                        </section>
+
+                        <section class="subscriptions-panel subscriptions-list-panel"
+                            aria-labelledby="savedSubscriptionsTitle">
+                            <div class="subscriptions-list-heading">
+                                <div>
+                                    <p class="subscriptions-list-eyebrow">Portfolio</p>
+                                    <h2 id="savedSubscriptionsTitle">Saved subscriptions</h2>
+                                </div>
+                                <span>{{ summary.count }} total</span>
+                            </div>
+
+                            {% if rows %}
+                            <div class="subscriptions-list">
+                                {% for row in rows %}
+                                <article class="subscription-row">
+                                    <div class="subscription-identity">
+                                        <span class="subscription-avatar" aria-hidden="true">
+                                            {{ row.record.name[0] | upper }}
+                                        </span>
+                                        <div>
+                                            <h3>{{ row.record.name }}</h3>
+                                            <p>
+                                                Added {{ row.record.created_at.strftime('%b %d, %Y') }}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="subscription-row-metric">
+                                        <span>Billing</span>
+                                        <strong>${{ '{:,.2f}'.format(row.record.value) }}</strong>
+                                        <small>{{ row.recurrence_label }}</small>
+                                    </div>
+
+                                    <div class="subscription-row-metric">
+                                        <span>Annualized</span>
+                                        <strong>${{ '{:,.2f}'.format(row.annual_value) }}</strong>
+                                        <small>Projected</small>
+                                    </div>
+
+                                    <form method="post"
+                                        action="{{ url_for('subscriptions.delete', subscription_id=row.record.id) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button class="subscription-delete" type="submit"
+                                            aria-label="Remove {{ row.record.name }}"
+                                            title="Remove {{ row.record.name }}">
+                                            <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                                            <span>Remove</span>
+                                        </button>
+                                    </form>
+                                </article>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="subscriptions-empty" id="subscriptionsEmptyState">
+                                <span aria-hidden="true">
+                                    <i class="fas fa-receipt"></i>
+                                </span>
+                                <h3>No subscriptions yet</h3>
+                                <p>Add your first recurring service to generate a cost summary.</p>
+                            </div>
+                            {% endif %}
+                        </section>
+                    </div>
+                </main>
+            </div>
+
+            {% include 'partials/_footer.html' %}
+        </div>
+    </div>
+
+    {% include 'partials/_scroll_top.html' %}
+    {% include 'partials/_logout_modal.html' %}
+</div>
+{% endblock %}

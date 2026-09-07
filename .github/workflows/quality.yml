@@ -1,0 +1,54 @@
+name: Quality checks
+
+on:
+  workflow_call:
+    inputs:
+      runner:
+        description: GitHub-hosted runner label
+        required: false
+        type: string
+        default: ubuntu-24.04
+      python-version:
+        description: Python version used by the quality gate
+        required: false
+        type: string
+        default: "3.11"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Python ${{ inputs.python-version }} on ${{ inputs.runner }}
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: 10
+    env:
+      ENVIRONMENT: testing
+      DEBUG: "false"
+      SECRET_KEY: ci-test-secret-key
+      SWAGGER_URLS: '{"FROSCH_KANJI_BACK":"http://127.0.0.1:8084/swagger"}'
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python-version }}
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip check
+
+      - name: Compile application and tests
+        run: python -m compileall -q -f app extensions helpers tests main.py config.py
+
+      - name: Run unit tests
+        run: python -W error::ResourceWarning -m unittest discover -s tests -v

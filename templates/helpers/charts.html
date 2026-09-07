@@ -1,4 +1,11 @@
 {% extends 'base.html' %}
+
+{% block title %}Charts | {{ app_name }}{% endblock %}
+
+{% block styles %}
+<link href="{{ url_for('static', filename='css/charts.css') }}" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
 <body id="page-top">
 
@@ -79,6 +86,33 @@
                                     <code>/js/demo/chart-pie-demo.js</code> file.
                                 </div>
                             </div>
+
+                            <!-- Radar Chart -->
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">Radar / Spider Chart</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="small text-gray-500 mb-3">
+                                        Compare two application profiles across the same quality dimensions.
+                                    </p>
+                                    <div class="chart-radar">
+                                        <canvas id="myRadarChart" role="img"
+                                            aria-label="Radar chart comparing the current release and target profile"
+                                            aria-describedby="radarChartDescription">
+                                            Your browser does not support the canvas element.
+                                        </canvas>
+                                    </div>
+                                    <p class="sr-only" id="radarChartDescription">
+                                        The current release scores 78 for performance, 86 for reliability,
+                                        72 for usability, 68 for test coverage, 82 for security, and 74 for
+                                        maintainability. The target profile scores 90 in every category.
+                                    </p>
+                                    <hr>
+                                    Styling for the radar chart can be found in the
+                                    <code>/js/demo/chart-radar-demo.js</code> file.
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -107,6 +141,7 @@
     <script src="{{ url_for('static', filename='js/demo/chart-area-demo.js') }}"></script>
     <script src="{{ url_for('static', filename='js/demo/chart-pie-demo.js') }}"></script>
     <script src="{{ url_for('static', filename='js/demo/chart-bar-demo.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/demo/chart-radar-demo.js') }}"></script>
 
 </body>
 {% endblock %}

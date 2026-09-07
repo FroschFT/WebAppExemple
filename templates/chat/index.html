@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block title %}Chat | {{ app_name }}{% endblock %}
+
+{% block styles %}
+<link href="{{ url_for('static', filename='css/chat.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div id="page-top">
+    <div id="wrapper">
+        {% include 'partials/_sidebar.html' %}
+
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content">
+                {% include 'partials/_topbar.html' %}
+
+                <main class="container-fluid chat-page" aria-labelledby="chatPageTitle">
+                    <div class="chat-page-heading">
+                        <div>
+                            <p class="chat-eyebrow mb-1">Workspace</p>
+                            <h1 class="h3 mb-1 text-gray-800" id="chatPageTitle">Messages</h1>
+                            <p class="mb-0 text-gray-500">Stay in sync with your team and recent contacts.</p>
+                        </div>
+                        <span class="chat-local-note">
+                            <i class="fas fa-lock mr-1" aria-hidden="true"></i>
+                            Saved in this browser
+                        </span>
+                    </div>
+
+                    <section class="chat-shell" id="chatApp"
+                        data-active-conversation="{{ active_conversation.id }}"
+                        data-open-conversation="{{ 'true' if open_conversation else 'false' }}">
+                        <aside class="chat-sidebar" aria-labelledby="conversationListTitle">
+                            <div class="chat-sidebar-header">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <h2 class="chat-sidebar-title mb-0" id="conversationListTitle">
+                                        Conversations
+                                        <span class="badge badge-primary ml-1">{{ conversations | length }}</span>
+                                    </h2>
+                                </div>
+
+                                <div class="chat-search">
+                                    <i class="fas fa-search" aria-hidden="true"></i>
+                                    <label class="sr-only" for="conversationSearch">Search conversations</label>
+                                    <input type="search" id="conversationSearch" autocomplete="off"
+                                        placeholder="Search conversations">
+                                    <button type="button" class="chat-search-clear" id="clearConversationSearch"
+                                        aria-label="Clear conversation search" title="Clear search" hidden>
+                                        <i class="fas fa-times" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="chat-conversation-list" id="conversationList" role="listbox"
+                                aria-label="Conversations">
+                                {% for conversation in conversations %}
+                                <button type="button"
+                                    class="chat-conversation{% if conversation.id == active_conversation.id %} is-active{% endif %}"
+                                    data-conversation-id="{{ conversation.id }}"
+                                    role="option"
+                                    aria-selected="{{ 'true' if conversation.id == active_conversation.id else 'false' }}">
+                                    <span class="chat-avatar">
+                                        <img src="{{ conversation.avatar_url }}" alt="">
+                                        <span class="chat-presence chat-presence--{{ conversation.status }}"
+                                            aria-hidden="true"></span>
+                                    </span>
+                                    <span class="chat-conversation-body">
+                                        <span class="chat-conversation-row">
+                                            <span class="chat-conversation-name">{{ conversation.name }}</span>
+                                            <span class="chat-conversation-time">{{ conversation.time }}</span>
+                                        </span>
+                                        <span class="chat-conversation-row">
+                                            <span class="chat-conversation-preview">{{ conversation.preview }}</span>
+                                            {% if conversation.unread %}
+                                            <span class="chat-unread badge badge-primary"
+                                                aria-label="{{ conversation.unread }} unread messages">
+                                                {{ conversation.unread }}
+                                            </span>
+                                            {% endif %}
+                                        </span>
+                                    </span>
+                                </button>
+                                {% endfor %}
+
+                                <div class="chat-no-results" id="conversationNoResults" hidden>
+                                    <i class="fas fa-search" aria-hidden="true"></i>
+                                    <p class="mb-1 font-weight-bold">No conversations found</p>
+                                    <span>Try a different name or keyword.</span>
+                                </div>
+                            </div>
+                        </aside>
+
+                        <article class="chat-thread" aria-labelledby="activeConversationName">
+                            <header class="chat-thread-header">
+                                <button type="button" class="chat-icon-button chat-back-button"
+                                    id="chatBackButton" aria-label="Back to conversations" title="Back to conversations">
+                                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                                </button>
+
+                                <span class="chat-avatar chat-avatar--header">
+                                    <img id="activeConversationAvatar" src="{{ active_conversation.avatar_url }}"
+                                        alt="">
+                                    <span class="chat-presence chat-presence--{{ active_conversation.status }}"
+                                        id="activeConversationPresence" aria-hidden="true"></span>
+                                </span>
+
+                                <div class="chat-thread-contact">
+                                    <h2 class="chat-thread-name mb-0" id="activeConversationName">
+                                        {{ active_conversation.name }}
+                                    </h2>
+                                    <p class="chat-thread-status mb-0" id="activeConversationStatus">
+                                        {{ active_conversation.status_label }}
+                                    </p>
+                                </div>
+                            </header>
+
+                            <div class="chat-message-feed" id="messageFeed" role="log" aria-live="polite"
+                                aria-relevant="additions" aria-label="Messages with {{ active_conversation.name }}"
+                                tabindex="0">
+                                <div class="chat-date-divider">
+                                    <span>{{ active_conversation.date_label }}</span>
+                                </div>
+
+                                {% for message in active_conversation.messages %}
+                                <div class="chat-message chat-message--{{ message.direction }}">
+                                    {% if message.direction == 'incoming' %}
+                                    <img class="chat-message-avatar" src="{{ active_conversation.avatar_url }}" alt="">
+                                    {% endif %}
+                                    <div class="chat-message-content">
+                                        {% if message.sender %}
+                                        <span class="chat-message-author">{{ message.sender }}</span>
+                                        {% endif %}
+                                        <div class="chat-message-bubble">{{ message.text }}</div>
+                                        <div class="chat-message-meta">
+                                            <time>{{ message.time }}</time>
+                                            {% if message.direction == 'outgoing' %}
+                                            <i class="fas fa-check-double" aria-label="Delivered"></i>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <form class="chat-composer" id="messageForm">
+                                <label class="sr-only" for="messageInput">Write a message</label>
+                                <div class="chat-composer-field">
+                                    <textarea id="messageInput" name="message" rows="1" maxlength="1000"
+                                        placeholder="Write a message..." aria-describedby="messageComposerHint"
+                                        required></textarea>
+                                    <button class="chat-send-button" id="sendMessageButton" type="submit"
+                                        aria-label="Send message" title="Send message" disabled>
+                                        <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                                <p class="chat-composer-hint mb-0" id="messageComposerHint">
+                                    Press Enter to send, Shift + Enter for a new line.
+                                </p>
+                            </form>
+                        </article>
+                    </section>
+                </main>
+            </div>
+
+            {% include 'partials/_footer.html' %}
+        </div>
+    </div>
+
+    {% include 'partials/_scroll_top.html' %}
+    {% include 'partials/_logout_modal.html' %}
+</div>
+
+<script type="application/json" id="chatData">{{ conversations | tojson }}</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endblock %}

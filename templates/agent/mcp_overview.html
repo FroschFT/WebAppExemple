@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+
+{% block title %}MCP Overview | {{ app_name }}{% endblock %}
+
+{% block styles %}
+<link href="{{ url_for('static', filename='css/mcp-overview.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div id="page-top">
+    <div id="wrapper">
+        {% include 'partials/_sidebar.html' %}
+
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content">
+                {% include 'partials/_topbar.html' %}
+
+                <main class="container-fluid mcp-page" aria-labelledby="mcpPageTitle">
+                    <div class="mcp-page-heading">
+                        <div>
+                            <p class="mcp-eyebrow mb-1">Agent integrations</p>
+                            <h1 class="h3 mb-1 text-gray-800" id="mcpPageTitle">MCP Overview</h1>
+                            <p class="mb-0 text-gray-500">
+                                Explore how Model Context Protocol servers can provide tools to an agent.
+                            </p>
+                        </div>
+                        <span class="mcp-demo-badge">
+                            <i class="fas fa-code mr-2" aria-hidden="true"></i>
+                            Front-end examples, no MCP calls
+                        </span>
+                    </div>
+
+                    <section class="mcp-metrics" aria-label="MCP example summary">
+                        <article>
+                            <span class="mcp-metric-icon mcp-metric-icon--primary" aria-hidden="true">
+                                <i class="fas fa-server"></i>
+                            </span>
+                            <span>
+                                <strong>{{ example_servers | length }}</strong>
+                                <span>Example servers</span>
+                            </span>
+                        </article>
+                        <article>
+                            <span class="mcp-metric-icon mcp-metric-icon--success" aria-hidden="true">
+                                <i class="fas fa-tools"></i>
+                            </span>
+                            <span>
+                                <strong>{{ example_tool_count }}</strong>
+                                <span>Illustrative tools</span>
+                            </span>
+                        </article>
+                        <article>
+                            <span class="mcp-metric-icon mcp-metric-icon--info" aria-hidden="true">
+                                <i class="fas fa-network-wired"></i>
+                            </span>
+                            <span>
+                                <strong>{{ transports | length }}</strong>
+                                <span>Transport examples</span>
+                            </span>
+                        </article>
+                        <article>
+                            <span class="mcp-metric-icon mcp-metric-icon--warning" aria-hidden="true">
+                                <i class="fas fa-plug"></i>
+                            </span>
+                            <span>
+                                <strong>{{ registered_servers | length }}</strong>
+                                <span>Runtime registered</span>
+                            </span>
+                        </article>
+                    </section>
+
+                    <section class="mcp-flow-panel" aria-labelledby="mcpFlowTitle">
+                        <div class="mcp-flow-copy">
+                            <p class="mcp-section-kicker">How it fits</p>
+                            <h2 id="mcpFlowTitle">From a prompt to a tool result</h2>
+                            <p>
+                                MCP standardizes how an agent discovers tools and exchanges structured context
+                                with external servers.
+                            </p>
+                        </div>
+                        <div class="mcp-flow" aria-label="MCP architecture flow">
+                            <span>
+                                <i class="fas fa-robot" aria-hidden="true"></i>
+                                Agent
+                            </span>
+                            <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                            <span>
+                                <i class="fas fa-project-diagram" aria-hidden="true"></i>
+                                MCP client
+                            </span>
+                            <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                            <span>
+                                <i class="fas fa-server" aria-hidden="true"></i>
+                                MCP server
+                            </span>
+                            <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                            <span>
+                                <i class="fas fa-tools" aria-hidden="true"></i>
+                                Tools
+                            </span>
+                        </div>
+                    </section>
+
+                    <section class="mcp-catalog-panel" aria-labelledby="mcpExamplesTitle">
+                        <div class="mcp-catalog-header">
+                            <div>
+                                <p class="mcp-section-kicker">Interface showcase</p>
+                                <h2 id="mcpExamplesTitle">Example MCP servers</h2>
+                                <p>
+                                    <span id="mcpResultCount">{{ example_servers | length }}</span>
+                                    <span id="mcpResultLabel">
+                                        example{{ '' if example_servers | length == 1 else 's' }} shown
+                                    </span>
+                                </p>
+                            </div>
+
+                            <div class="mcp-catalog-actions">
+                                <button class="mcp-expand-button" id="toggleAllMcpTools" type="button">
+                                    <i class="fas fa-list-ul" aria-hidden="true"></i>
+                                    <span>Expand tools</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mcp-filters">
+                            <div class="mcp-search">
+                                <i class="fas fa-search" aria-hidden="true"></i>
+                                <label class="sr-only" for="mcpSearch">Search MCP examples</label>
+                                <input id="mcpSearch" type="search" autocomplete="off"
+                                    placeholder="Search servers, tools, or capabilities">
+                                <button id="clearMcpSearch" type="button" aria-label="Clear MCP search"
+                                    title="Clear search" hidden>
+                                    <i class="fas fa-times" aria-hidden="true"></i>
+                                </button>
+                            </div>
+
+                            <label class="sr-only" for="mcpTransportFilter">Filter by transport</label>
+                            <select id="mcpTransportFilter">
+                                <option value="all">All transports</option>
+                                {% for transport in transports %}
+                                <option value="{{ transport }}">{{ transport }}</option>
+                                {% endfor %}
+                            </select>
+
+                            <label class="sr-only" for="mcpStatusFilter">Filter by example status</label>
+                            <select id="mcpStatusFilter">
+                                <option value="all">All example statuses</option>
+                                {% for status in statuses %}
+                                <option value="{{ status }}">{{ status | capitalize }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mcp-example-grid" id="mcpExampleGrid">
+                            {% for server in example_servers %}
+                            <article class="mcp-server-card" data-mcp-example
+                                data-mcp-transport="{{ server.transport }}"
+                                data-mcp-status="{{ server.status }}"
+                                data-mcp-search="{{ server.name }} {{ server.description }} {{ server.scope }} {{ server.capabilities | join(' ') }} {% for tool in server.tools %}{{ tool.name }} {{ tool.description }} {% endfor %}">
+                                <div class="mcp-server-card-top">
+                                    <span class="mcp-server-icon" aria-hidden="true">
+                                        <i class="{{ server.icon }}"></i>
+                                    </span>
+                                    <span class="mcp-status mcp-status--{{ server.status }}">
+                                        <span aria-hidden="true"></span>
+                                        {{ server.status_label }}
+                                    </span>
+                                </div>
+
+                                <div class="mcp-server-title">
+                                    <div>
+                                        <h3>{{ server.name }}</h3>
+                                        <p>{{ server.scope }}</p>
+                                    </div>
+                                    <span>{{ server.transport_label }}</span>
+                                </div>
+
+                                <p class="mcp-server-description">{{ server.description }}</p>
+
+                                <dl class="mcp-server-meta">
+                                    <div>
+                                        <dt>Transport</dt>
+                                        <dd>{{ server.transport_label }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Illustrative tools</dt>
+                                        <dd>{{ server.tools | length }}</dd>
+                                    </div>
+                                </dl>
+
+                                <div class="mcp-capabilities" aria-label="Example capabilities">
+                                    {% for capability in server.capabilities %}
+                                    <span>{{ capability }}</span>
+                                    {% endfor %}
+                                </div>
+
+                                <details class="mcp-tool-details">
+                                    <summary>
+                                        <span>View example tools</span>
+                                        <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                                    </summary>
+                                    <ul>
+                                        {% for tool in server.tools %}
+                                        <li>
+                                            <code>{{ tool.name }}</code>
+                                            <span>{{ tool.description }}</span>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </details>
+                            </article>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mcp-empty-state" id="mcpEmptyState" hidden>
+                            <span aria-hidden="true"><i class="fas fa-search"></i></span>
+                            <h3>No MCP examples found</h3>
+                            <p>Try another search term or clear the selected filters.</p>
+                            <button class="btn btn-primary" id="clearMcpFilters" type="button">
+                                Clear filters
+                            </button>
+                        </div>
+                    </section>
+
+                    <section class="mcp-runtime-panel" id="mcp-runtime-registry"
+                        aria-labelledby="runtimeRegistryTitle">
+                        <div class="mcp-runtime-header">
+                            <div>
+                                <p class="mcp-section-kicker">Application state</p>
+                                <h2 id="runtimeRegistryTitle">Runtime registry</h2>
+                                <p>Metadata registered on this Flask application instance.</p>
+                            </div>
+                            <span>{{ registered_servers | length }} registered</span>
+                        </div>
+
+                        {% if registered_servers %}
+                        <div class="mcp-runtime-list">
+                            {% for server in registered_servers %}
+                            <article id="mcp-runtime-{{ server.id }}">
+                                <span class="mcp-runtime-icon" aria-hidden="true">
+                                    <i class="fas fa-plug"></i>
+                                </span>
+                                <div>
+                                    <h3>{{ server.name }}</h3>
+                                    <p>{{ server.description or 'No description provided.' }}</p>
+                                </div>
+                                <span>{{ server.transport }}</span>
+                            </article>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="mcp-runtime-empty">
+                            <span aria-hidden="true"><i class="fas fa-plug"></i></span>
+                            <div>
+                                <h3>No runtime MCPs registered</h3>
+                                <p>
+                                    Register MCP metadata after creating the Flask app to populate this section
+                                    and the Integrations sidebar.
+                                </p>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="mcp-registration-example">
+                            <div>
+                                <span>Registration example</span>
+                                <strong>Metadata only - no MCP client is started</strong>
+                            </div>
+                            <pre><code>register_mcp_server(
+    app,
+    "workspace-files",
+    "Workspace Files",
+    transport="stdio",
+)</code></pre>
+                        </div>
+                    </section>
+
+                    <p class="sr-only" id="mcpScreenReaderStatus" aria-live="polite"></p>
+                </main>
+            </div>
+
+            {% include 'partials/_footer.html' %}
+        </div>
+    </div>
+
+    {% include 'partials/_scroll_top.html' %}
+    {% include 'partials/_logout_modal.html' %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/mcp-overview.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block title %}Form Example | {{ app_name }}{% endblock %}
+
+{% block styles %}
+<link href="{{ url_for('static', filename='css/form-example.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div id="page-top">
+    <div id="wrapper">
+        {% include 'partials/_sidebar.html' %}
+
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content">
+                {% include 'partials/_topbar.html' %}
+
+                <main class="container-fluid form-example-page" aria-labelledby="formPageTitle">
+                    <div class="form-page-heading">
+                        <div>
+                            <p class="form-eyebrow mb-1">Interface example</p>
+                            <h1 class="h3 mb-1 text-gray-800" id="formPageTitle">Request Form</h1>
+                            <p class="mb-0 text-gray-500">
+                                A front-end layout for structured details, scheduling, and attachments.
+                            </p>
+                        </div>
+                        <span class="form-demo-badge">
+                            <i class="fas fa-code mr-2" aria-hidden="true"></i>
+                            Front-end demo
+                        </span>
+                    </div>
+
+                    <form class="form-example-layout" id="exampleRequestForm" novalidate>
+                        <section class="form-panel form-primary-panel" aria-labelledby="requestDetailsTitle">
+                            <div class="form-panel-header">
+                                <span class="form-section-icon" aria-hidden="true">
+                                    <i class="fas fa-pen"></i>
+                                </span>
+                                <div>
+                                    <h2 id="requestDetailsTitle">Request details</h2>
+                                    <p>Provide the basic information for this example request.</p>
+                                </div>
+                            </div>
+
+                            <div class="form-fields-grid">
+                                <div class="form-group form-group--wide">
+                                    <label for="requestTitle">
+                                        Request title
+                                        <span aria-hidden="true">*</span>
+                                    </label>
+                                    <input class="form-control" id="requestTitle" type="text"
+                                        maxlength="100" autocomplete="off"
+                                        placeholder="Example: Review the new landing page"
+                                        aria-describedby="requestTitleHelp" required>
+                                    <small id="requestTitleHelp">Use a short, descriptive title.</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="contactEmail">
+                                        Contact email
+                                        <span aria-hidden="true">*</span>
+                                    </label>
+                                    <input class="form-control" id="contactEmail" type="email"
+                                        maxlength="150" autocomplete="email"
+                                        placeholder="name@example.com" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="requestType">
+                                        Request type
+                                        <span aria-hidden="true">*</span>
+                                    </label>
+                                    <select class="form-control" id="requestType" required>
+                                        <option value="" selected disabled>Choose a type</option>
+                                        <option value="design-review">Design review</option>
+                                        <option value="content-update">Content update</option>
+                                        <option value="integration">Integration</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-section-divider"></div>
+
+                            <div class="form-panel-header form-panel-header--compact">
+                                <span class="form-section-icon" aria-hidden="true">
+                                    <i class="fas fa-paperclip"></i>
+                                </span>
+                                <div>
+                                    <h2 id="attachmentTitle">Attachments</h2>
+                                    <p>Drop supporting files or select them from your device.</p>
+                                </div>
+                            </div>
+
+                            <div class="file-drop-zone" id="fileDropZone" aria-labelledby="attachmentTitle"
+                                aria-describedby="fileDropHint fileUploadError">
+                                <input id="fileInput" type="file" multiple hidden>
+                                <span class="file-drop-icon" aria-hidden="true">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </span>
+                                <strong>Drag and drop files here</strong>
+                                <span>or</span>
+                                <button class="file-browse-button" id="browseFiles" type="button">
+                                    Browse files
+                                </button>
+                                <small id="fileDropHint">Up to 5 files, 10 MB each.</small>
+                            </div>
+
+                            <p class="form-field-error" id="fileUploadError" role="alert" hidden></p>
+
+                            <ul class="file-list" id="selectedFileList" aria-label="Selected files"
+                                aria-live="polite"></ul>
+                        </section>
+
+                        <aside class="form-side-column">
+                            <section class="form-panel calendar-panel" aria-labelledby="calendarTitle">
+                                <div class="form-panel-header form-panel-header--compact">
+                                    <span class="form-section-icon" aria-hidden="true">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </span>
+                                    <div>
+                                        <h2 id="calendarTitle">Target date</h2>
+                                        <p>Choose a date for the request.</p>
+                                    </div>
+                                </div>
+
+                                <input id="selectedDate" type="hidden">
+
+                                <div class="calendar-widget" id="calendarWidget">
+                                    <div class="calendar-toolbar">
+                                        <button class="calendar-nav-button" id="previousMonth" type="button"
+                                            aria-label="Previous month" title="Previous month">
+                                            <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                                        </button>
+                                        <h3 id="calendarMonthLabel" aria-live="polite"></h3>
+                                        <button class="calendar-nav-button" id="nextMonth" type="button"
+                                            aria-label="Next month" title="Next month">
+                                            <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="calendar-weekdays" aria-hidden="true">
+                                        <span>Sun</span>
+                                        <span>Mon</span>
+                                        <span>Tue</span>
+                                        <span>Wed</span>
+                                        <span>Thu</span>
+                                        <span>Fri</span>
+                                        <span>Sat</span>
+                                    </div>
+
+                                    <div class="calendar-grid" id="calendarGrid" role="grid"
+                                        aria-labelledby="calendarMonthLabel"></div>
+
+                                    <div class="calendar-footer">
+                                        <div>
+                                            <span>Selected</span>
+                                            <strong id="selectedDateLabel" aria-live="polite">
+                                                No date selected
+                                            </strong>
+                                        </div>
+                                        <button id="selectToday" type="button">Today</button>
+                                    </div>
+                                </div>
+
+                                <p class="form-field-error" id="calendarError" role="alert" hidden>
+                                    Select a target date.
+                                </p>
+                            </section>
+
+                            <section class="form-panel form-demo-note" aria-labelledby="demoNoteTitle">
+                                <span class="form-note-icon" aria-hidden="true">
+                                    <i class="fas fa-info-circle"></i>
+                                </span>
+                                <div>
+                                    <h2 id="demoNoteTitle">Layout only</h2>
+                                    <p>
+                                        This example validates in the browser. No form values or files are uploaded.
+                                    </p>
+                                </div>
+                            </section>
+                        </aside>
+
+                        <div class="form-actions">
+                            <div class="form-demo-status" id="formDemoStatus" role="status" hidden>
+                                <i class="fas fa-check-circle" aria-hidden="true"></i>
+                                <span id="formDemoStatusText"></span>
+                            </div>
+                            <div class="form-action-buttons">
+                                <button class="btn btn-light" type="reset">Reset</button>
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-check mr-2" aria-hidden="true"></i>
+                                    Validate example
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </main>
+            </div>
+
+            {% include 'partials/_footer.html' %}
+        </div>
+    </div>
+
+    {% include 'partials/_scroll_top.html' %}
+    {% include 'partials/_logout_modal.html' %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/form-example.js') }}"></script>
+{% endblock %}

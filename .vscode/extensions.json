@@ -1,0 +1,32 @@
+{
+    "recommendations": [
+        // C/C++ and CMake
+        "ms-vscode.cpptools-extension-pack",
+        "twxs.cmake",
+
+        // Python
+        "ms-python.python",
+        "ms-python.debugpy",
+        "ms-python.vscode-pylance",
+        "ms-python.vscode-python-envs",
+
+        // Data Science
+        "ms-toolsai.jupyter",
+        "ms-toolsai.vscode-jupyter-powertoys",
+        "ms-toolsai.jupyter-hub",
+
+        // Data Science Tools
+        "github.copilot",
+        "github.copilot-chat",
+
+        // OTHERS
+        "ms-toolsai.datawrangler",
+        "tomoki1207.pdf",
+        "ms-vscode.vscode-speech",
+        // "optuna.optuna-dashboard"
+        // "jakobhoeg.vscode-pokemon"
+        // "mermaidchart.vscode-mermaid-chart",
+        // "redhat.vscode-yaml",
+        // "databricks.databricks",
+    ]
+}

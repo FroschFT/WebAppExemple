@@ -1,77 +1,179 @@
+{% set api_catalog_open = request.blueprint == 'api' %}
+{% set agent_open = request.endpoint in ('agent.index', 'agent.companion') %}
+{% set mcp_open = request.endpoint == 'agent.mcp_overview' %}
+{% set components_open = request.blueprint == 'componentes' %}
+{% set utilities_open = request.blueprint == 'utilities' %}
+{% set pages_open = request.blueprint in ('user', 'erros') or request.endpoint == 'others.blank' %}
+
 <!-- Sidebar -->
-<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+<nav class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar"
+    aria-label="Primary navigation">
 
     <!-- Sidebar - Brand -->
-    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ url_for('main.index') }}">
-        <div class="sidebar-brand-icon rotate-n-15">
-            <i class="fas fa-laugh-wink"></i>
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ url_for('main.index') }}"
+        aria-label="{{ app_name }} home">
+        <div class="sidebar-brand-icon">
+            <i class="fas fa-flask" aria-hidden="true"></i>
         </div>
-        <div class="sidebar-brand-text mx-3">SB Admin <sup>2</sup></div>
+        <div class="sidebar-brand-text mx-3">{{ app_name }}</div>
     </a>
+
+    <button class="sidebar-mobile-close d-md-none" id="sidebarCloseMobile" type="button"
+        aria-controls="accordionSidebar" aria-expanded="true"
+        aria-label="Close navigation" title="Close navigation">
+        <i class="fas fa-times" aria-hidden="true"></i>
+    </button>
 
     <!-- Divider -->
     <hr class="sidebar-divider my-0">
 
     <!-- Nav Item - Dashboard -->
-    <li class="nav-item active">
-        <a class="nav-link" href="{{ url_for('main.index') }}">
+    <div class="nav-item{% if request.endpoint == 'main.index' %} active{% endif %}">
+        <a class="nav-link" href="{{ url_for('main.index') }}"
+            {% if request.endpoint == 'main.index' %}aria-current="page"{% endif %}>
             <i class="fas fa-fw fa-tachometer-alt"></i>
             <span>Dashboard</span></a>
-    </li>
-
-
-    <!-- Divider -->
-    <hr class="sidebar-divider">
-
-    <!-- Heading SWAGGER HUB -->
-    <div class="sidebar-heading">
-        SWAGGER HUB
     </div>
 
-    <!-- Nav Item - Pages Collapse Menu -->
-    <li class="nav-item">
-        <a class="nav-link collapsed" 
-            href="#" 
-            data-toggle="collapse" 
-            data-target="#collapseServidor"
-            aria-expanded="true" 
-            aria-controls="collapseServidor">
-            <i class="fas fa-fw fa-cog"></i>
-            <span>Servidores</span>
-        </a>
-        <div id="collapseServidor" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-            <div class="bg-white py-2 collapse-inner rounded">
-                <a class="collapse-item" href="{{ url_for('api.swagger') }}">SWAGGER HUB</a>
-
-                <h6 class="collapse-header">Kanji:</h6>
-                <a class="collapse-item" href="{{ url_for('api.subpageteste') }}">Manipulação</a>
-                <a class="collapse-item" href="{{ url_for('api.subpageteste') }}">Metricas</a>
-
-                <h6 class="collapse-header">Custom Components2:</h6>
-                <a class="collapse-item" href="{{ url_for('api.subpageteste') }}">Manipulação</a>
-                <a class="collapse-item" href="{{ url_for('api.subpageteste') }}">Metricas</a>
-            </div>
-        </div>
-    </li>
-
 
     <!-- Divider -->
     <hr class="sidebar-divider">
 
-    <!-- Heading APP Kanji -->
+    <!-- Heading Applications -->
     <div class="sidebar-heading">
-        APP Kanji
+        Applications
     </div>
 
     <!-- Nav Item - Kanji -->
-    <li class="nav-item">
-        <a class="nav-link" href="{{ url_for('kanji.kanji') }}">
-            <!-- <i class="fas fa-fw fa-chart-area"></i> -->
-            <img src="{{ url_for('static', filename='img/kanji.svg') }}" alt="Bootstrap" width="32" height="32">
-            <!-- <img class="rounded-circle" src="{{ url_for('static', filename='img/kanji.svg') }}"alt="..."> -->
-            <span>Kanji</span></a>
-    </li>
+    <div class="nav-item{% if request.blueprint == 'kanji' %} active{% endif %}">
+        <a class="nav-link" href="{{ url_for('kanji.kanji') }}"
+            {% if request.blueprint == 'kanji' %}aria-current="page"{% endif %}>
+            <i class="fas fa-fw fa-language" aria-hidden="true"></i>
+            <span>Kanji</span>
+        </a>
+    </div>
 
+    <!-- Nav Item - Chat -->
+    <div class="nav-item{% if request.blueprint == 'chat' %} active{% endif %}">
+        <a class="nav-link" href="{{ url_for('chat.index') }}"
+            {% if request.blueprint == 'chat' %}aria-current="page"{% endif %}>
+            <i class="fas fa-fw fa-comments"></i>
+            <span>Chat</span>
+        </a>
+    </div>
+
+    <!-- Nav Item - Subscriptions -->
+    <div class="nav-item{% if request.blueprint == 'subscriptions' %} active{% endif %}">
+        <a class="nav-link" href="{{ url_for('subscriptions.index') }}"
+            {% if request.blueprint == 'subscriptions' %}aria-current="page"{% endif %}>
+            <i class="fas fa-fw fa-credit-card" aria-hidden="true"></i>
+            <span>Subscriptions</span>
+        </a>
+    </div>
+
+    <!-- Nav Item - Agent -->
+    <div class="nav-item{% if agent_open %} active{% endif %}">
+        <button class="nav-link sidebar-collapse-toggle{% if not agent_open %} collapsed{% endif %}"
+            id="agentChatToggle"
+            type="button"
+            data-toggle="collapse"
+            data-target="#collapseAgentChat"
+            aria-expanded="{{ 'true' if agent_open else 'false' }}"
+            aria-controls="collapseAgentChat">
+            <i class="fas fa-fw fa-robot"></i>
+            <span>Agent</span>
+        </button>
+        <div id="collapseAgentChat" class="collapse{% if agent_open %} show{% endif %}"
+            aria-labelledby="agentChatToggle" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Workspaces:</h6>
+                <a class="collapse-item{% if request.endpoint == 'agent.index' %} active{% endif %}"
+                    href="{{ url_for('agent.index') }}"
+                    {% if request.endpoint == 'agent.index' %}aria-current="page"{% endif %}>
+                    Chat
+                </a>
+                <a class="collapse-item{% if request.endpoint == 'agent.companion' %} active{% endif %}"
+                    href="{{ url_for('agent.companion') }}"
+                    {% if request.endpoint == 'agent.companion' %}aria-current="page"{% endif %}>
+                    Companion
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Divider -->
+    <hr class="sidebar-divider">
+
+    <!-- Heading Integrations -->
+    <div class="sidebar-heading">
+        Integrations
+    </div>
+
+    <!-- Nav Item - API Catalog -->
+    <div class="nav-item{% if api_catalog_open %} active{% endif %}">
+        <button class="nav-link sidebar-collapse-toggle{% if not api_catalog_open %} collapsed{% endif %}"
+            id="apiCatalogToggle" type="button" data-toggle="collapse" data-target="#collapseApiCatalog"
+            aria-expanded="{{ 'true' if api_catalog_open else 'false' }}" aria-controls="collapseApiCatalog">
+            <i class="fas fa-fw fa-code" aria-hidden="true"></i>
+            <span>API Catalog</span>
+        </button>
+        <div id="collapseApiCatalog" class="collapse{% if api_catalog_open %} show{% endif %}"
+            aria-labelledby="apiCatalogToggle" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Catalog:</h6>
+                <a class="collapse-item{% if request.endpoint == 'api.swagger' %} active{% endif %}"
+                    href="{{ url_for('api.swagger') }}"
+                    {% if request.endpoint == 'api.swagger' %}aria-current="page"{% endif %}>
+                    Overview
+                </a>
+
+                <h6 class="collapse-header">Registered APIs:</h6>
+                {% for service in swagger_navigation_services %}
+                <a class="collapse-item{% if request.endpoint == 'api.service_detail' and request.view_args and request.view_args.get('service_id') == service.id %} active{% endif %}"
+                    href="{{ url_for('api.service_detail', service_id=service.id) }}"
+                    title="{{ service.name }}"
+                    {% if request.endpoint == 'api.service_detail' and request.view_args and request.view_args.get('service_id') == service.id %}aria-current="page"{% endif %}>
+                    {{ service.name }}
+                </a>
+                {% else %}
+                <span class="collapse-item text-muted">No APIs configured</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Nav Item - MCP Servers -->
+    <div class="nav-item{% if mcp_open %} active{% endif %}">
+        <button class="nav-link sidebar-collapse-toggle{% if not mcp_open %} collapsed{% endif %}"
+            id="mcpServersToggle" type="button" data-toggle="collapse" data-target="#collapseMcpServers"
+            aria-expanded="{{ 'true' if mcp_open else 'false' }}" aria-controls="collapseMcpServers">
+            <i class="fas fa-fw fa-server" aria-hidden="true"></i>
+            <span>MCP Servers</span>
+        </button>
+        <div id="collapseMcpServers" class="collapse{% if mcp_open %} show{% endif %}"
+            aria-labelledby="mcpServersToggle" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">MCP Catalog:</h6>
+                <a class="collapse-item{% if mcp_open %} active{% endif %}"
+                    href="{{ url_for('agent.mcp_overview') }}"
+                    {% if mcp_open %}aria-current="page"{% endif %}>
+                    Overview
+                </a>
+
+                <h6 class="collapse-header">Registered MCPs:</h6>
+                {% for server in agent_mcp_navigation_servers %}
+                <a class="collapse-item"
+                    href="{{ url_for('agent.mcp_overview') }}#mcp-runtime-{{ server.id }}"
+                    title="{{ server.description or server.transport }}">
+                    {{ server.name }}
+                </a>
+                {% else %}
+                <span class="collapse-item text-muted">No MCPs configured</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 
     <!-- Divider -->
     <hr class="sidebar-divider">
@@ -81,40 +183,65 @@
         Interface
     </div>
 
+    <!-- Nav Item - Form Example -->
+    <div class="nav-item{% if request.blueprint == 'form' %} active{% endif %}">
+        <a class="nav-link" href="{{ url_for('form.index') }}"
+            {% if request.blueprint == 'form' %}aria-current="page"{% endif %}>
+            <i class="fas fa-fw fa-clipboard-list" aria-hidden="true"></i>
+            <span>Form Example</span>
+        </a>
+    </div>
+
     <!-- Nav Item - Pages Collapse Menu -->
-    <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
-            aria-expanded="true" aria-controls="collapseTwo">
+    <div class="nav-item{% if components_open %} active{% endif %}">
+        <button class="nav-link sidebar-collapse-toggle{% if not components_open %} collapsed{% endif %}"
+            id="componentsToggle" type="button" data-toggle="collapse" data-target="#collapseComponents"
+            aria-expanded="{{ 'true' if components_open else 'false' }}" aria-controls="collapseComponents">
             <i class="fas fa-fw fa-cog"></i>
             <span>Components</span>
-        </a>
-        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+        </button>
+        <div id="collapseComponents" class="collapse{% if components_open %} show{% endif %}"
+            aria-labelledby="componentsToggle" data-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <h6 class="collapse-header">Custom Components:</h6>
-                <a class="collapse-item" href="{{ url_for('componentes.buttons') }}">Buttons</a>
-                <a class="collapse-item" href="{{ url_for('componentes.cards') }}">Cards</a>
+                <a class="collapse-item{% if request.endpoint == 'componentes.buttons' %} active{% endif %}"
+                    href="{{ url_for('componentes.buttons') }}"
+                    {% if request.endpoint == 'componentes.buttons' %}aria-current="page"{% endif %}>Buttons</a>
+                <a class="collapse-item{% if request.endpoint == 'componentes.cards' %} active{% endif %}"
+                    href="{{ url_for('componentes.cards') }}"
+                    {% if request.endpoint == 'componentes.cards' %}aria-current="page"{% endif %}>Cards</a>
             </div>
         </div>
-    </li>
+    </div>
 
     <!-- Nav Item - Utilities Collapse Menu -->
-    <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
-            aria-expanded="true" aria-controls="collapseUtilities">
+    <div class="nav-item{% if utilities_open %} active{% endif %}">
+        <button class="nav-link sidebar-collapse-toggle{% if not utilities_open %} collapsed{% endif %}"
+            id="utilitiesToggle" type="button" data-toggle="collapse" data-target="#collapseUtilities"
+            aria-expanded="{{ 'true' if utilities_open else 'false' }}" aria-controls="collapseUtilities">
             <i class="fas fa-fw fa-wrench"></i>
             <span>Utilities</span>
-        </a>
-        <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
+        </button>
+        <div id="collapseUtilities" class="collapse{% if utilities_open %} show{% endif %}"
+            aria-labelledby="utilitiesToggle"
             data-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <h6 class="collapse-header">Custom Utilities:</h6>
-                <a class="collapse-item" href="{{ url_for('utilities.color') }}">Colors</a>
-                <a class="collapse-item" href="{{ url_for('utilities.border') }}">Borders</a>
-                <a class="collapse-item" href="{{ url_for('utilities.animation') }}">Animations</a>
-                <a class="collapse-item" href="{{ url_for('utilities.other') }}">Other</a>
+                <a class="collapse-item{% if request.endpoint == 'utilities.color' %} active{% endif %}"
+                    href="{{ url_for('utilities.color') }}"
+                    {% if request.endpoint == 'utilities.color' %}aria-current="page"{% endif %}>Colors</a>
+                <a class="collapse-item{% if request.endpoint == 'utilities.border' %} active{% endif %}"
+                    href="{{ url_for('utilities.border') }}"
+                    {% if request.endpoint == 'utilities.border' %}aria-current="page"{% endif %}>Borders</a>
+                <a class="collapse-item{% if request.endpoint == 'utilities.animation' %} active{% endif %}"
+                    href="{{ url_for('utilities.animation') }}"
+                    {% if request.endpoint == 'utilities.animation' %}aria-current="page"{% endif %}>Animations</a>
+                <a class="collapse-item{% if request.endpoint == 'utilities.other' %} active{% endif %}"
+                    href="{{ url_for('utilities.other') }}"
+                    {% if request.endpoint == 'utilities.other' %}aria-current="page"{% endif %}>Other</a>
             </div>
         </div>
-    </li>
+    </div>
 
 
     <!-- Divider -->
@@ -126,39 +253,53 @@
     </div>
 
     <!-- Nav Item - Pages Collapse Menu -->
-    <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages"
-            aria-expanded="true" aria-controls="collapsePages">
+    <div class="nav-item{% if pages_open %} active{% endif %}">
+        <button class="nav-link sidebar-collapse-toggle{% if not pages_open %} collapsed{% endif %}"
+            id="pagesToggle" type="button" data-toggle="collapse" data-target="#collapsePages"
+            aria-expanded="{{ 'true' if pages_open else 'false' }}" aria-controls="collapsePages">
             <i class="fas fa-fw fa-folder"></i>
             <span>Pages</span>
-        </a>
-        <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+        </button>
+        <div id="collapsePages" class="collapse{% if pages_open %} show{% endif %}"
+            aria-labelledby="pagesToggle" data-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <h6 class="collapse-header">Login Screens:</h6>
-                <a class="collapse-item" href="{{ url_for('user.login') }}">Login</a>
-                <a class="collapse-item" href="{{ url_for('user.register') }}">Register</a>
-                <a class="collapse-item" href="{{ url_for('user.forgot_password') }}">Forgot Password</a>
+                <a class="collapse-item{% if request.endpoint == 'user.login' %} active{% endif %}"
+                    href="{{ url_for('user.login') }}"
+                    {% if request.endpoint == 'user.login' %}aria-current="page"{% endif %}>Login</a>
+                <a class="collapse-item{% if request.endpoint == 'user.register' %} active{% endif %}"
+                    href="{{ url_for('user.register') }}"
+                    {% if request.endpoint == 'user.register' %}aria-current="page"{% endif %}>Register</a>
+                <a class="collapse-item{% if request.endpoint == 'user.forgot_password' %} active{% endif %}"
+                    href="{{ url_for('user.forgot_password') }}"
+                    {% if request.endpoint == 'user.forgot_password' %}aria-current="page"{% endif %}>Forgot Password</a>
                 <div class="collapse-divider"></div>
                 <h6 class="collapse-header">Other Pages:</h6>
-                <a class="collapse-item" href="{{ url_for('erros.not_found') }}">404 Page</a>
-                <a class="collapse-item" href="{{ url_for('others.blank') }}">Blank Page</a>
+                <a class="collapse-item{% if request.endpoint == 'erros.not_found' %} active{% endif %}"
+                    href="{{ url_for('erros.not_found') }}"
+                    {% if request.endpoint == 'erros.not_found' %}aria-current="page"{% endif %}>404 Page</a>
+                <a class="collapse-item{% if request.endpoint == 'others.blank' %} active{% endif %}"
+                    href="{{ url_for('others.blank') }}"
+                    {% if request.endpoint == 'others.blank' %}aria-current="page"{% endif %}>Blank Page</a>
             </div>
         </div>
-    </li>
+    </div>
 
     <!-- Nav Item - Charts -->
-    <li class="nav-item">
-        <a class="nav-link" href="{{ url_for('others.charts') }}">
+    <div class="nav-item{% if request.endpoint == 'others.charts' %} active{% endif %}">
+        <a class="nav-link" href="{{ url_for('others.charts') }}"
+            {% if request.endpoint == 'others.charts' %}aria-current="page"{% endif %}>
             <i class="fas fa-fw fa-chart-area"></i>
             <span>Charts</span></a>
-    </li>
+    </div>
 
     <!-- Nav Item - Tables -->
-    <li class="nav-item">
-        <a class="nav-link" href="{{ url_for('others.tables') }}">
+    <div class="nav-item{% if request.endpoint == 'others.tables' %} active{% endif %}">
+        <a class="nav-link" href="{{ url_for('others.tables') }}"
+            {% if request.endpoint == 'others.tables' %}aria-current="page"{% endif %}>
             <i class="fas fa-fw fa-table"></i>
             <span>Tables</span></a>
-    </li>
+    </div>
 
 
     <!-- Divider -->
@@ -166,15 +307,22 @@
 
     <!-- Sidebar Toggler (Sidebar) -->
     <div class="text-center d-none d-md-inline">
-        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+        <button class="rounded-circle border-0" id="sidebarToggle" type="button"
+            aria-controls="accordionSidebar" aria-expanded="true"
+            aria-label="Collapse navigation" title="Collapse navigation"></button>
     </div>
 
     <!-- Sidebar Message -->
+    <div class="sidebar-brand-icon rotate-n-15">
+        <i class="fas fa-laugh-wink"></i>
+    </div>
     <div class="sidebar-card d-none d-lg-flex">
         <img class="sidebar-card-illustration mb-2" src="{{ url_for('static', filename='img/undraw_rocket.svg') }}" alt="...">
-        <p class="text-center mb-2"><strong>SB Admin Pro</strong> is packed with premium features, components, and more!</p>
-        <a class="btn btn-success btn-sm" href="https://startbootstrap.com/theme/sb-admin-pro">Upgrade to Pro!</a>
+        <p class="text-center mb-2"><strong>WebAppExemple</strong> is packed with features, components, and more!</p>
+        <a class="btn btn-success btn-sm" href="https://github.com/FroschFT/WebAppExemple">See in GitHub!</a>
     </div>
 
-</ul>
+</nav>
+<button class="sidebar-backdrop" id="sidebarBackdrop" type="button" tabindex="-1"
+    aria-label="Close navigation" hidden></button>
 <!-- End of Sidebar -->

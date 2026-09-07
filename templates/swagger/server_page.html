@@ -1,56 +1,210 @@
 {% extends 'base.html' %}
+
+{% block title %}{{ service.name }} | {{ app_name }}{% endblock %}
+
+{% block styles %}
+<link href="{{ url_for('static', filename='css/swagger-hub.css') }}" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
-
-<body id="page-top">
-
-
-    <!-- Page Wrapper -->
+<div id="page-top">
     <div id="wrapper">
-
         {% include 'partials/_sidebar.html' %}
 
-        <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column">
-
-            <!-- Main Content -->
             <div id="content">
-
                 {% include 'partials/_topbar.html' %}
 
-                <!-- Begin Page Content -->
-                <div class="container-fluid">
+                <main class="container-fluid swagger-page" aria-labelledby="servicePageTitle">
+                    <nav class="swagger-breadcrumb" aria-label="Breadcrumb">
+                        <a href="{{ url_for('api.swagger') }}">Swagger Hub</a>
+                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                        <span aria-current="page">{{ service.name }}</span>
+                    </nav>
 
-                    <!-- Page Heading -->
-                    <h1 class="h3 mb-4 text-gray-800">Server Page</h1>
+                    <section class="swagger-service-hero">
+                        <div class="swagger-service-identity">
+                            <span class="swagger-service-icon swagger-service-icon--large" aria-hidden="true">
+                                <i class="fas fa-code"></i>
+                            </span>
+                            <div>
+                                <div class="swagger-service-heading-row">
+                                    <h1 id="servicePageTitle">{{ service.name }}</h1>
+                                    <span class="swagger-status swagger-status--{{ service.status }}">
+                                        <span aria-hidden="true"></span>
+                                        {{ service.status_label }}
+                                    </span>
+                                </div>
+                                <p>{{ service.description }}</p>
+                                <div class="swagger-tag-list">
+                                    {% for tag in service.tags %}
+                                    <span>{{ tag }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
 
-                    <iframe
-                        src="{{ swagger_url }}"
-                        width="100%"
-                        height="700" 
-                        title="Iframe Example"
-                        name="targetframe"
-                        allowTransparency="true"
-                        frameborder="0"
-                    >
-                    </iframe>
+                        <div class="swagger-hero-actions">
+                            <button class="btn btn-light" type="button"
+                                data-copy-value="{{ service.swagger_url }}">
+                                <i class="fas fa-copy mr-2" aria-hidden="true"></i>
+                                Copy docs URL
+                            </button>
+                            <a class="btn btn-primary" href="{{ service.swagger_url }}"
+                                target="_blank" rel="noopener noreferrer">
+                                Open Swagger UI
+                                <i class="fas fa-external-link-alt ml-2" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </section>
 
-                </div>
-                <!-- /.container-fluid -->
+                    <section class="swagger-detail-metrics" aria-label="Service summary">
+                        <article>
+                            <span>Environment</span>
+                            <strong>{{ service.environment }}</strong>
+                        </article>
+                        <article>
+                            <span>Version</span>
+                            <strong>{{ service.version }}</strong>
+                        </article>
+                        <article>
+                            <span>Example operations</span>
+                            <strong>{{ service.operation_count }}</strong>
+                        </article>
+                        <article>
+                            <span>Authentication</span>
+                            <strong>{{ service.auth }}</strong>
+                        </article>
+                    </section>
 
+                    <div class="swagger-detail-grid">
+                        <section class="swagger-detail-panel" aria-labelledby="connectionTitle">
+                            <div class="swagger-detail-panel-header">
+                                <span aria-hidden="true"><i class="fas fa-link"></i></span>
+                                <div>
+                                    <h2 id="connectionTitle">Connection details</h2>
+                                    <p>Configured locations for this service.</p>
+                                </div>
+                            </div>
+
+                            <dl class="swagger-connection-list">
+                                <div>
+                                    <dt>Base URL</dt>
+                                    <dd>
+                                        <code>{{ service.base_url }}</code>
+                                        <button type="button" data-copy-value="{{ service.base_url }}"
+                                            aria-label="Copy base URL" title="Copy base URL">
+                                            <i class="fas fa-copy" aria-hidden="true"></i>
+                                        </button>
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt>Swagger URL</dt>
+                                    <dd>
+                                        <code>{{ service.swagger_url }}</code>
+                                        <button type="button" data-copy-value="{{ service.swagger_url }}"
+                                            aria-label="Copy Swagger URL" title="Copy Swagger URL">
+                                            <i class="fas fa-copy" aria-hidden="true"></i>
+                                        </button>
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt>Configuration key</dt>
+                                    <dd><code>{{ service.config_key }}</code></dd>
+                                </div>
+                                <div>
+                                    <dt>Specification</dt>
+                                    <dd>{{ service.specification }}</dd>
+                                </div>
+                            </dl>
+
+                            <div class="swagger-config-note">
+                                <i class="fas fa-info-circle" aria-hidden="true"></i>
+                                <span>
+                                    This catalog confirms configuration only. Availability is not probed by this page.
+                                </span>
+                            </div>
+                        </section>
+
+                        <section class="swagger-detail-panel" aria-labelledby="ownershipTitle">
+                            <div class="swagger-detail-panel-header">
+                                <span aria-hidden="true"><i class="fas fa-users"></i></span>
+                                <div>
+                                    <h2 id="ownershipTitle">Ownership</h2>
+                                    <p>Example service governance metadata.</p>
+                                </div>
+                            </div>
+
+                            <dl class="swagger-ownership-list">
+                                <div>
+                                    <dt>Owner</dt>
+                                    <dd>{{ service.owner }}</dd>
+                                </div>
+                                <div>
+                                    <dt>Environment</dt>
+                                    <dd>{{ service.environment }}</dd>
+                                </div>
+                                <div>
+                                    <dt>Documentation</dt>
+                                    <dd>{{ service.status_label }}</dd>
+                                </div>
+                                <div>
+                                    <dt>Authentication</dt>
+                                    <dd>{{ service.auth }}</dd>
+                                </div>
+                            </dl>
+                        </section>
+                    </div>
+
+                    <section class="swagger-detail-panel swagger-operations-panel"
+                        aria-labelledby="operationsTitle">
+                        <div class="swagger-detail-panel-header">
+                            <span aria-hidden="true"><i class="fas fa-route"></i></span>
+                            <div>
+                                <h2 id="operationsTitle">Illustrative operations</h2>
+                                <p>
+                                    Example routes for the catalog layout. Use Swagger UI for the authoritative contract.
+                                </p>
+                            </div>
+                        </div>
+
+                        {% if service.operations %}
+                        <div class="swagger-operation-list">
+                            {% for operation in service.operations %}
+                            <article class="swagger-operation">
+                                <span class="swagger-method swagger-method--{{ operation.method | lower }}">
+                                    {{ operation.method }}
+                                </span>
+                                <code>{{ operation.path }}</code>
+                                <p>{{ operation.summary }}</p>
+                                <span class="swagger-auth-label">
+                                    <i class="fas fa-{{ 'lock' if operation.auth_required else 'lock-open' }}"
+                                        aria-hidden="true"></i>
+                                    {{ 'Auth required' if operation.auth_required else 'Public example' }}
+                                </span>
+                            </article>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="swagger-inline-empty">
+                            No illustrative operations are registered for this service.
+                        </div>
+                        {% endif %}
+                    </section>
+
+                    <p class="swagger-copy-status" id="swaggerCopyStatus" role="status"></p>
+                </main>
             </div>
-            <!-- End of Main Content -->
 
             {% include 'partials/_footer.html' %}
-
         </div>
-        <!-- End of Content Wrapper -->
-
     </div>
-    <!-- End of Page Wrapper -->
 
     {% include 'partials/_scroll_top.html' %}
-
     {% include 'partials/_logout_modal.html' %}
+</div>
+{% endblock %}
 
-</body>
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/swagger-hub.js') }}"></script>
 {% endblock %}

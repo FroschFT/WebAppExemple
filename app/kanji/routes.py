@@ -1,9 +1,12 @@
 from flask import render_template
+
 from app.kanji import bp
+from app.kanji.data import KANJI_CARDS
+
 
 @bp.route('/')
 def kanji():
-    return render_template('Kanji/Kanji.html')
+    return render_template('kanji/Kanji.html', kanji_cards=KANJI_CARDS)
 
 @bp.route('/charts')
 def charts():

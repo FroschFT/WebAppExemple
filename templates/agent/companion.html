@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+
+{% block title %}Companion | {{ app_name }}{% endblock %}
+
+{% block styles %}
+<link href="{{ url_for('static', filename='css/chat.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/agent.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/companion.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div id="page-top">
+    <div id="wrapper">
+        {% include 'partials/_sidebar.html' %}
+
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content">
+                {% include 'partials/_topbar.html' %}
+
+                <main class="container-fluid chat-page agent-page companion-page"
+                    aria-labelledby="companionPageTitle">
+                    <div class="chat-page-heading">
+                        <div>
+                            <p class="chat-eyebrow mb-1">Workspace</p>
+                            <h1 class="h3 mb-1 text-gray-800" id="companionPageTitle">Companion</h1>
+                            <p class="mb-0 text-gray-500">
+                                A visual companion workspace built on the shared agent conversation.
+                            </p>
+                        </div>
+                        <span class="agent-provider-state{% if agent_configured %} is-connected{% endif %}"
+                            role="status">
+                            <span class="agent-provider-dot" aria-hidden="true"></span>
+                            {{ 'Provider connected' if agent_configured else 'Provider not connected' }}
+                        </span>
+                    </div>
+
+                    <section class="chat-shell companion-shell" id="companionApp"
+                        data-response-url="{{ url_for('agent.respond') }}"
+                        data-session-id="companion-workspace"
+                        data-avatar-url="{{ url_for('static', filename='img/companion-nova.svg') }}"
+                        data-agent-configured="{{ 'true' if agent_configured else 'false' }}">
+                        <aside class="chat-sidebar companion-presence-panel"
+                            aria-label="Companion portrait and voice preview">
+                            <section class="companion-portrait-panel" aria-labelledby="companionPortraitTitle">
+                                <header class="companion-panel-heading">
+                                    <div>
+                                        <span class="companion-kicker">Visual presence</span>
+                                        <h2 id="companionPortraitTitle">Nova</h2>
+                                    </div>
+                                    <span class="companion-presence-state">
+                                        <span aria-hidden="true"></span>
+                                        Available
+                                    </span>
+                                </header>
+
+                                <figure class="companion-avatar-frame">
+                                    <img src="{{ url_for('static', filename='img/companion-nova.svg') }}"
+                                        alt="Nova, a friendly illustrated digital companion">
+                                    <figcaption>
+                                        <span>Portrait placeholder</span>
+                                        <strong>Static image today, animated avatar later</strong>
+                                    </figcaption>
+                                </figure>
+
+                                <button class="companion-open-chat" id="companionOpenChat" type="button">
+                                    <i class="fas fa-comments" aria-hidden="true"></i>
+                                    Open chat
+                                </button>
+                            </section>
+
+                            <section class="companion-voice-panel" aria-labelledby="companionVoiceTitle">
+                                <header class="companion-panel-heading companion-panel-heading--compact">
+                                    <div>
+                                        <span class="companion-kicker">Voice</span>
+                                        <h2 id="companionVoiceTitle">Audio visualizer</h2>
+                                    </div>
+                                    <span class="companion-voice-status" id="companionVoiceStatus">
+                                        Placeholder
+                                    </span>
+                                </header>
+
+                                <div class="companion-waveform" id="companionWaveform" role="img"
+                                    aria-label="Voice waveform placeholder; no audio is playing">
+                                    <span></span><span></span><span></span><span></span><span></span>
+                                    <span></span><span></span><span></span><span></span><span></span>
+                                    <span></span><span></span><span></span><span></span><span></span>
+                                    <span></span><span></span><span></span><span></span><span></span>
+                                </div>
+
+                                <p>No audio is generated yet. This panel reserves the future voice experience.</p>
+                            </section>
+                        </aside>
+
+                        <article class="chat-thread companion-thread" aria-labelledby="companionThreadTitle">
+                            <header class="chat-thread-header">
+                                <button type="button" class="chat-icon-button chat-back-button"
+                                    id="companionBackButton" aria-label="Back to companion"
+                                    title="Back to companion">
+                                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                                </button>
+
+                                <span class="companion-thread-avatar" aria-hidden="true">
+                                    <img src="{{ url_for('static', filename='img/companion-nova.svg') }}" alt="">
+                                </span>
+
+                                <div class="chat-thread-contact">
+                                    <h2 class="chat-thread-name mb-0" id="companionThreadTitle">Nova</h2>
+                                    <p class="chat-thread-status mb-0">
+                                        <span class="agent-inline-status{% if agent_configured %} is-connected{% endif %}"
+                                            aria-hidden="true"></span>
+                                        Companion
+                                        <span aria-hidden="true">&middot;</span>
+                                        {{ 'Ready' if agent_configured else 'Awaiting provider' }}
+                                    </p>
+                                </div>
+                            </header>
+
+                            <div class="chat-message-feed companion-message-feed" id="companionMessageFeed"
+                                role="log" aria-live="polite" aria-relevant="additions"
+                                aria-label="Messages with Nova" tabindex="0">
+                                {% if not agent_configured %}
+                                <div class="agent-provider-banner" role="status">
+                                    <span class="agent-provider-banner-icon" aria-hidden="true">
+                                        <i class="fas fa-plug"></i>
+                                    </span>
+                                    <span>
+                                        <strong>Agent provider not connected</strong>
+                                        <span>
+                                            You can compose locally now. Register a provider to receive new replies.
+                                        </span>
+                                    </span>
+                                </div>
+                                {% endif %}
+
+                                <div class="chat-date-divider"><span>Today</span></div>
+
+                                {% for message in companion_messages %}
+                                <div class="chat-message chat-message--{{ 'outgoing' if message.role == 'user' else 'incoming' }}">
+                                    {% if message.role == 'assistant' %}
+                                    <img class="chat-message-avatar"
+                                        src="{{ url_for('static', filename='img/companion-nova.svg') }}" alt="">
+                                    {% endif %}
+                                    <div class="chat-message-content">
+                                        {% if message.role == 'assistant' %}
+                                        <span class="chat-message-author">Nova</span>
+                                        {% endif %}
+                                        <div class="chat-message-bubble">{{ message.content }}</div>
+                                        <div class="chat-message-meta">
+                                            <time>{{ message.time }}</time>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <form class="chat-composer agent-composer companion-composer"
+                                id="companionMessageForm">
+                                <label class="sr-only" for="companionMessageInput">Message Nova</label>
+                                <div class="chat-composer-field">
+                                    <textarea id="companionMessageInput" name="message" rows="1"
+                                        maxlength="10000" placeholder="Message Nova..."
+                                        aria-describedby="companionComposerHint" required></textarea>
+                                    <button class="chat-send-button" id="sendCompanionMessage" type="submit"
+                                        aria-label="Send message" title="Send message" disabled>
+                                        <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                                <p class="chat-composer-hint mb-0" id="companionComposerHint">
+                                    Press Enter to send. Voice and avatar animation are placeholders.
+                                </p>
+                            </form>
+                        </article>
+                    </section>
+
+                    <p class="sr-only" id="companionScreenReaderStatus" aria-live="assertive"></p>
+                </main>
+            </div>
+
+            {% include 'partials/_footer.html' %}
+        </div>
+    </div>
+
+    {% include 'partials/_scroll_top.html' %}
+    {% include 'partials/_logout_modal.html' %}
+</div>
+
+<script type="application/json" id="companionMessageData">{{ companion_messages | tojson }}</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/companion.js') }}"></script>
+{% endblock %}

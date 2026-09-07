@@ -1,0 +1,11 @@
+.chart-radar {
+  height: 18rem;
+  position: relative;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .chart-radar {
+    height: 20rem;
+  }
+}

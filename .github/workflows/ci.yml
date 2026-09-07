@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality - ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner:
+          - ubuntu-24.04
+          - ubuntu-latest
+          - windows-2022
+          - macos-14
+    uses: ./.github/workflows/quality.yml
+    with:
+      runner: ${{ matrix.runner }}
+      python-version: "3.11"
+
+  container:
+    name: Validate container
+    needs: quality
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build container
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./dockerfile
+          load: true
+          pull: true
+          push: false
+          tags: webapp-example:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+
+      - name: Smoke test container
+        run: |
+          docker run --detach \
+            --name webapp-example-ci \
+            --publish 8081:8081 \
+            --env SECRET_KEY=ci-container-secret \
+            webapp-example:ci
+
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:8081/ > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          docker logs webapp-example-ci
+          exit 1
+
+      - name: Remove test container
+        if: always()
+        run: docker rm --force webapp-example-ci 2>/dev/null || true
