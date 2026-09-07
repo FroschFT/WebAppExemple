@@ -6,7 +6,7 @@ from app.kanji.data import KANJI_CARDS
 
 @bp.route('/')
 def kanji():
-    return render_template('kanji/Kanji.html', kanji_cards=KANJI_CARDS)
+    return render_template('kanji/kanji.html', kanji_cards=KANJI_CARDS)
 
 @bp.route('/charts')
 def charts():
