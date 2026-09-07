@@ -27,20 +27,7 @@ RUN python -m compileall -q app extensions helpers main.py config.py wsgi.py
 EXPOSE 8081
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-    CMD [
-        "python",
-        "-c",
-        "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8081/', timeout=2)"
-    ]
+    CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8081/', timeout=2)"]
 
 # CMD ["python", "main.py"]
-CMD [
-    "gunicorn",
-    "--bind=0.0.0.0:8081",
-    "--workers=2",
-    "--threads=4",
-    "--timeout=120",
-    "--access-logfile=-",
-    "--error-logfile=-",
-    "wsgi:app"
-]
+CMD ["gunicorn", "--bind=0.0.0.0:8081", "--workers=2", "--threads=4", "--timeout=120", "--access-logfile=-", "--error-logfile=-", "wsgi:app"]
